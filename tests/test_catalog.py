@@ -75,6 +75,45 @@ def test_project_crud_validation_and_conflict(client, settings) -> None:
     assert "最新の内容" in conflict.get_data(as_text=True)
 
 
+def test_validation_messages_are_associated_with_form_controls(client) -> None:
+    client.get("/projects/new")
+    project = client.post(
+        "/projects/new", data={"csrf_token": _csrf(client), "name": " "}
+    ).get_data(as_text=True)
+    assert 'id="name" name="name"' in project
+    assert 'aria-invalid="true" aria-describedby="name-error"' in project
+    assert 'id="name-error" class="field-error"' in project
+
+    project_id = _create_project(client)
+    client.get(f"/projects/{project_id}/targets/new")
+    target = client.post(
+        f"/projects/{project_id}/targets/new",
+        data={"csrf_token": _csrf(client), "name": " ", "base_url": "not-a-url"},
+    ).get_data(as_text=True)
+    assert 'aria-invalid="true" aria-describedby="name-error"' in target
+    assert 'aria-describedby="base_url-warning"' in target
+    assert 'id="base_url-warning" class="field-warning"' in target
+
+    target_id = _create_target(client, project_id)
+    client.get(f"/targets/{target_id}/notes/new")
+    note = client.post(
+        f"/targets/{target_id}/notes/new",
+        data={
+            "csrf_token": _csrf(client),
+            "title": " ",
+            "severity": "invalid",
+            "status": "invalid",
+            "discovered_at": "",
+            "timezone_offset": "0",
+            "target_url": "not-a-url",
+        },
+    ).get_data(as_text=True)
+    for field in ("title", "severity", "status", "discovered_at"):
+        assert f'aria-invalid="true" aria-describedby="{field}-error"' in note
+        assert f'id="{field}-error" class="field-error"' in note
+    assert 'aria-describedby="target_url-warning"' in note
+
+
 def test_three_level_crud_and_html_is_escaped(client) -> None:
     project_id = _create_project(client)
     target_id = _create_target(client, project_id)
@@ -216,3 +255,26 @@ def test_target_and_note_show_all_system_fields_and_note_conflict(client, settin
     assert "更新後" in detail
     assert "Medium" in detail
     assert "確認済み" in detail
+
+
+def test_export_responses_have_safe_download_headers_and_unicode_content(client) -> None:
+    project_id = _create_project(client, "日本語案件")
+    target_id = _create_target(client, project_id, name="Unicode対象")
+    note_id = _create_note(client, target_id, title="改行\r\nを含むメモ")
+
+    csv_response = client.get(f"/notes/{note_id}/exports/csv")
+    assert csv_response.status_code == 200
+    assert csv_response.mimetype == "text/csv"
+    assert csv_response.headers["Content-Disposition"] == f"attachment; filename=note-{note_id}.csv"
+    assert csv_response.data.startswith(b"\xef\xbb\xbf")
+    assert "日本語案件" in csv_response.data.decode("utf-8-sig")
+
+    markdown_response = client.get(f"/projects/{project_id}/exports/markdown")
+    assert markdown_response.status_code == 200
+    assert markdown_response.mimetype == "text/markdown"
+    assert markdown_response.headers["Content-Disposition"] == (
+        f"attachment; filename=project-{project_id}.md"
+    )
+    markdown = markdown_response.data.decode("utf-8")
+    assert "日本語案件" in markdown
+    assert "Unicode対象" in markdown
