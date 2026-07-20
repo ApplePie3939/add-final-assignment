@@ -141,7 +141,17 @@ def validate_note(data: dict[str, object]) -> ValidationResult:
         errors["status"] = "対応状況は表示された候補から選択してください。"
     else:
         values["status"] = status
-    values["discovered_at"], error = parse_local_datetime(data.get("discovered_at"), data.get("timezone_offset"))
+    discovered_at = data.get("discovered_at")
+    if not str(discovered_at or "").strip():
+        discovered_date = str(data.get("discovered_date") or "").strip()
+        discovered_time = str(data.get("discovered_time") or "").strip()
+        if not discovered_time:
+            discovered_hour = str(data.get("discovered_hour") or "").strip()
+            discovered_minute = str(data.get("discovered_minute") or "").strip()
+            if discovered_hour and discovered_minute:
+                discovered_time = f"{discovered_hour}:{discovered_minute}"
+        discovered_at = f"{discovered_date}T{discovered_time}" if discovered_date and discovered_time else None
+    values["discovered_at"], error = parse_local_datetime(discovered_at, data.get("timezone_offset"))
     if error:
         errors["discovered_at"] = error
     values["deletion_locked"] = 1 if data.get("deletion_locked") in (True, 1, "1", "on") else 0

@@ -11,11 +11,27 @@ document.querySelectorAll("time[data-local-time]").forEach((element) => {
   }
 });
 
-document.querySelectorAll("input[data-utc-input]").forEach((input) => {
-  const parsed = new Date(input.dataset.utcInput);
+document.querySelectorAll("input[data-utc-date]").forEach((input) => {
+  const parsed = new Date(input.dataset.utcDate);
   if (!Number.isNaN(parsed.valueOf())) {
     const local = new Date(parsed.valueOf() - parsed.getTimezoneOffset() * 60000);
-    input.value = local.toISOString().slice(0, 16);
+    input.value = local.toISOString().slice(0, 10);
+  }
+});
+
+document.querySelectorAll("select[data-utc-hour]").forEach((input) => {
+  const parsed = new Date(input.dataset.utcHour);
+  if (!Number.isNaN(parsed.valueOf())) {
+    const local = new Date(parsed.valueOf() - parsed.getTimezoneOffset() * 60000);
+    input.value = local.toISOString().slice(11, 13);
+  }
+});
+
+document.querySelectorAll("select[data-utc-minute]").forEach((input) => {
+  const parsed = new Date(input.dataset.utcMinute);
+  if (!Number.isNaN(parsed.valueOf())) {
+    const local = new Date(parsed.valueOf() - parsed.getTimezoneOffset() * 60000);
+    input.value = local.toISOString().slice(14, 16);
   }
 });
 

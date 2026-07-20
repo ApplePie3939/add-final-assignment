@@ -108,10 +108,41 @@ def test_validation_messages_are_associated_with_form_controls(client) -> None:
             "target_url": "not-a-url",
         },
     ).get_data(as_text=True)
-    for field in ("title", "severity", "status", "discovered_at"):
+    for field in ("title", "severity", "status"):
         assert f'aria-invalid="true" aria-describedby="{field}-error"' in note
         assert f'id="{field}-error" class="field-error"' in note
+    assert note.count('aria-invalid="true" aria-describedby="discovered_at-error"') == 3
+    assert 'id="discovered_at-error" class="field-error"' in note
     assert 'aria-describedby="target_url-warning"' in note
+
+
+def test_note_form_uses_firefox_compatible_date_hour_and_minute_inputs(client) -> None:
+    project_id = _create_project(client)
+    target_id = _create_target(client, project_id)
+
+    form = client.get(f"/targets/{target_id}/notes/new").get_data(as_text=True)
+
+    assert 'type="date" id="discovered_date" name="discovered_date"' in form
+    assert 'id="discovered_hour" name="discovered_hour"' in form
+    assert 'id="discovered_minute" name="discovered_minute"' in form
+    assert 'type="time"' not in form
+    assert 'type="datetime-local"' not in form
+
+    created = client.post(
+        f"/targets/{target_id}/notes/new",
+        data={
+            "csrf_token": _csrf(client),
+            "title": "Firefox日時入力確認",
+            "severity": "High",
+            "status": "未確認",
+            "discovered_date": "2026-07-20",
+            "discovered_hour": "14",
+            "discovered_minute": "35",
+            "timezone_offset": "-540",
+        },
+        follow_redirects=False,
+    )
+    assert created.status_code == 302
 
 
 def test_three_level_crud_and_html_is_escaped(client) -> None:

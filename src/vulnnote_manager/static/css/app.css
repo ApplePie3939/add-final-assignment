@@ -52,8 +52,12 @@ h2 { margin-top: 0; letter-spacing: -.02em; }
 .meta { color: var(--muted); font-size: .9rem; }
 .form-grid { display: grid; gap: 1.2rem; }
 .field label { display: block; font-weight: 700; margin-bottom: .35rem; }
-.field input, .field textarea, .field select { width: 100%; border: 1px solid #aab7c4; border-radius: .65rem; padding: .7rem; font: inherit; background: white; }
+.field input:not([type="checkbox"]):not([type="radio"]), .field textarea, .field select { width: 100%; border: 1px solid #aab7c4; border-radius: .65rem; padding: .7rem; font: inherit; background: white; }
+.field input[type="checkbox"], .field input[type="radio"] { width: auto; margin: 0 .45rem 0 0; padding: 0; vertical-align: middle; }
 .field textarea { min-height: 8rem; resize: vertical; }
+.datetime-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.datetime-fieldset legend { font-weight: 700; margin-bottom: .35rem; padding: 0; }
+.datetime-fields { display: grid; grid-template-columns: minmax(10rem, 2fr) repeat(2, minmax(6rem, 1fr)); gap: 1rem; }
 .field-error { color: #982820; margin: .3rem 0 0; }
 .field-warning { color: #745000; margin: .3rem 0 0; }
 .filter-form { display: grid; grid-template-columns: minmax(15rem, 2fr) repeat(2, minmax(9rem, 1fr)); gap: 1rem; align-items: end; margin-bottom: 1.25rem; padding: 1.25rem; }
@@ -98,4 +102,4 @@ h2 { margin-top: 0; letter-spacing: -.02em; }
 .large-textarea { min-height: 32rem !important; font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; }
 @media (max-width: 48rem) { .comparison-grid { grid-template-columns: 1fr; } }
 @media (max-width: 48rem) { .filter-form, .filter-form-wide { grid-template-columns: 1fr 1fr; } .field-wide { grid-column: 1 / -1; } }
-@media (max-width: 35rem) { .container { width: min(100% - 1.25rem, 70rem); } .header-content { padding-block: .65rem; } .site-header nav { width: 100%; order: 3; overflow-x: auto; padding-bottom: .35rem; } .local-badge { margin-left: auto; } .definition-grid, .filter-form, .filter-form-wide, .card-facts { grid-template-columns: 1fr; } .field-wide { grid-column: auto; } .card-facts dd { margin-bottom: .5rem; } .page-header { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 35rem) { .container { width: min(100% - 1.25rem, 70rem); } .header-content { padding-block: .65rem; } .site-header nav { width: 100%; order: 3; overflow-x: auto; padding-bottom: .35rem; } .local-badge { margin-left: auto; } .definition-grid, .filter-form, .filter-form-wide, .card-facts, .datetime-fields { grid-template-columns: 1fr; } .field-wide { grid-column: auto; } .card-facts dd { margin-bottom: .5rem; } .page-header { align-items: flex-start; flex-direction: column; } }

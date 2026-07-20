@@ -59,6 +59,23 @@ def test_datetime_accepts_timezone_aware_input() -> None:
     assert value == "2026-07-16T03:00:00.000000+00:00"
 
 
+def test_note_accepts_separate_date_hour_and_minute_inputs() -> None:
+    result = validate_note(
+        {
+            "target_id": "2",
+            "title": "XSS",
+            "severity": "High",
+            "discovered_date": "2026-07-16",
+            "discovered_hour": "12",
+            "discovered_minute": "30",
+            "timezone_offset": "-540",
+        }
+    )
+
+    assert result.is_valid
+    assert result.values["discovered_at"] == "2026-07-16T03:30:00.000000+00:00"
+
+
 def test_vulnerability_options_remove_exact_trimmed_duplicates() -> None:
     options = vulnerability_type_options([" SQLインジェクション ", "独自分類", "独自分類", None])
     assert options.count("SQLインジェクション") == 1
